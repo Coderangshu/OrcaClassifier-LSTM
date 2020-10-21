@@ -1,0 +1,19 @@
+stages:
+  get_data:
+    cmd: tar -xzvfOrcasoundLab07052019_PodCastround2.tar.gz
+    deps:
+    - OrcasoundLab07052019_PodCastRound2.tar.gz
+    outs:
+    - Round2_OS_07_05
+  get_data2:
+    cmd: tar -xzvf OrcasoundLab09272017_PodCastRound3.tar.gz
+    deps:
+    - OrcasoundLab09272017_PodCastRound3.tar.gz
+    outs:
+    - Round3_OS_09_27_2017
+  get_data_test:
+    cmd: tar -xzvfOrcasoundLab09272017_Test.tar.gz
+    deps:
+    - OrcasoundLab09272017_Test.tar.gz
+    outs:
+    - OrcasoundLab09272017_Test
