@@ -1,19 +1,29 @@
 stages:
-  get_data:
+  get_rnd2_data:
     cmd: tar -xzvfOrcasoundLab07052019_PodCastround2.tar.gz
     deps:
     - OrcasoundLab07052019_PodCastRound2.tar.gz
     outs:
-    - Round2_OS_07_05
-  get_data2:
-    cmd: tar -xzvf OrcasoundLab09272017_PodCastRound3.tar.gz
+    - Round2_OS_07_05:
+        cache: false
+  get_rnd3_data:
+    cmd: tar -xzvfOrcasoundLab09272017_PodCastRound3.tar.gz
     deps:
     - OrcasoundLab09272017_PodCastRound3.tar.gz
     outs:
-    - Round3_OS_09_27_2017
-  get_data_test:
+    - Round3_OS_09_27_2017:
+        cache: false
+  get_test_data:
     cmd: tar -xzvfOrcasoundLab09272017_Test.tar.gz
     deps:
     - OrcasoundLab09272017_Test.tar.gz
     outs:
-    - OrcasoundLab09272017_Test
+    - OrcasoundLab09272017_Test:
+        cache: false
+  get_test_data2:
+    cmd: tar -xzvfOS_SVeirs_07_05_2019_08_24_00.tar.gz
+    deps:
+    - OS_SVeirs_07_05_2019_08_24_00.tar.gz
+    outs:
+    - test_data:
+        cache: false
