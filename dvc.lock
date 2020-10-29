@@ -61,9 +61,9 @@ extract_calls_rnd2:
   - path: Round2_OS_07_05
     md5: 2e4c38c2a3d9a0bb6c3b9b2e326741f6.dir
   - path: preprocess.py
-    md5: 67cb47abbfe31c6fcc09911a051632fc
+    md5: da769c93ff65c8b1ab02dcfc2b8f73b9
   outs:
-  - path: extracted-calls/negative_calls
-    md5: 08f5df1262b19e8466b71edb3a79fbaa.dir
-  - path: extracted-calls/positive_calls
+  - path: extracted-calls/0
+    md5: 615fc928d86d896ec5e33efed82b7d09.dir
+  - path: extracted-calls/1
     md5: 688b491a57630662b76596f7ea7b5726.dir
