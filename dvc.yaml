@@ -28,7 +28,7 @@ stages:
     - test_data:
         cache: false
   extract_calls_rnd2:
-    cmd: python preprocess.py --tsv_path Round2_OS_07_05/train.tsv  --files_dir Round2_OS_07_05/wav --call_time 2 --output_dir extracted-calls
+    cmd: python preprocess.py --tsv_path Round2_OS_07_05/train.tsv  --files_dir Round2_OS_07_05/wav --call_time 2 --output_dir extracted-calls --reduce_noise
     deps:
     - preprocess.py
     - Round2_OS_07_05
