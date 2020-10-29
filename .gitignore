@@ -7,3 +7,6 @@
 /OrcasoundLab09272017_Test
 /.ipynb_checkpoints
 /test_data
+/.ipynb
+__pycache__
+/extracted-calls
