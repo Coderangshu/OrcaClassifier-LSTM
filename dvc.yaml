@@ -33,7 +33,7 @@ stages:
     - preprocess.py
     - Round2_OS_07_05
     outs:
-    - extracted-calls/positive_calls:
+    - extracted-calls/1:
         cache: false
-    - extracted-calls/negative_calls:
+    - extracted-calls/0:
         cache: false

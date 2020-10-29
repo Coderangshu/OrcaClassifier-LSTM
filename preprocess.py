@@ -17,7 +17,7 @@ import noisereduce as nr
 from tempfile import mktemp
 from scipy.io.wavfile import read
 import wavio
-
+from tqdm import tqdm
 
 
 # In[ ]:
@@ -78,6 +78,10 @@ def extract_audio(output_directory,file_location,call_time_in_seconds,call_annot
     Returns:
         None
     """
+    if output_directory[-1]=='1':
+        dir = "Positive calls"
+    else:
+        dir = "Negative calls"
 
     file_name = call_annotations.filename[:].values
     start_time = call_annotations.start[:].values
@@ -86,7 +90,8 @@ def extract_audio(output_directory,file_location,call_time_in_seconds,call_annot
     call_duration = 0
     call_time_in_seconds = call_time_in_seconds*1000
 
-    for audio_file in file_name:
+    for i in tqdm(range(0,len(file_name)),desc = "{} extraction".format(dir)):
+        audio_file = file_name[i]
         audio_file = os.path.join(file_location, audio_file)
         sound = AudioSegment.from_file(audio_file)
         start_time_duration = start_time[i]
@@ -123,11 +128,11 @@ def extract_audio(output_directory,file_location,call_time_in_seconds,call_annot
 def main(tsv_path,files_dir,call_time,output_dir,reduce_noise):
 
     # prepare output directories
-    positive_dir = os.path.join(output_dir, "positive_calls")
+    positive_dir = os.path.join(output_dir, "1")
     if not os.path.isdir(positive_dir):
         os.mkdir(positive_dir)
 
-    negative_dir = os.path.join(output_dir, "negative_calls")
+    negative_dir = os.path.join(output_dir, "0")
     if not os.path.isdir(negative_dir):
         os.mkdir(negative_dir)
 
