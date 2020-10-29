@@ -11,15 +11,13 @@ from pathlib import Path
 import selection_table as sl
 import soundfile as sf
 import librosa
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import pandas as pd
 from pydub import AudioSegment
-from scipy import signal
-from skimage.restoration import denoise_wavelet
+import noisereduce as nr
+from tempfile import mktemp
+from scipy.io.wavfile import read
+import wavio
 
-matplotlib.use('Agg')
 
 
 # In[ ]:
@@ -53,7 +51,6 @@ def generate_negative_tsv(call_annotations,call_time,files_dir):
     negatives_annotations = sl.create_rndm_backgr_selections(annotations=standardized_annotations,files=file_durations,length=call_time,num=len(positives_call_duration),trim_table=True)
 
     negative_tsv_generated = negatives_annotations.reset_index(level=[0, 1])
-    print(negative_tsv_generated.head())
 
     return negative_tsv_generated
 
@@ -61,7 +58,7 @@ def generate_negative_tsv(call_annotations,call_time,files_dir):
 # In[ ]:
 
 
-def extract_audio(output_directory,file_location,call_time_in_seconds,call_annotations):
+def extract_audio(output_directory,file_location,call_time_in_seconds,call_annotations,reduce_noise=False):
     """This function extracts the audio of a specified duration.
     Since a single audio clip might consist of a mixture of both calls
     and no calls, therefore smaller audio clips of particular time frame
@@ -97,26 +94,42 @@ def extract_audio(output_directory,file_location,call_time_in_seconds,call_annot
         i = i + 1
         call_duration = start_time_duration + call_time_in_seconds
         call = sound[start_time_duration:call_duration]
-        output_file = os.path.join(
-                        output_directory,
-                        "extracted_calls{0}.wav".format(i))
-        call.export(output_file, format="wav")
 
+        if reduce_noise:
+            import tensorflow as tf
+            physical_devices = tf.config.experimental.list_physical_devices('GPU')
+            if len(physical_devices) > 0:
+                tf.config.experimental.set_memory_growth(physical_devices[0], True)
+            wname = mktemp('.wav')
+            call.export(wname, format="wav")
+            (Frequency, array) = read(wname)
+            noisy_part = array
+            reduced_noise = nr.reduce_noise(audio_clip=array.astype('float64'), noise_clip=noisy_part.astype('float64'), use_tensorflow=True, verbose=False)
+
+            output_file = os.path.join(
+                            output_directory,
+                            "extracted_calls{0}.wav".format(i))
+            wavio.write(output_file, reduced_noise, Frequency, sampwidth=2)
+
+        else:
+            output_file = os.path.join(
+                            output_directory,
+                            "extracted_calls{0}.wav".format(i))
+            call.export(output_file, format="wav")
 
 # In[ ]:
 
 
-def main(tsv_path,files_dir,call_time,output_dir):
+def main(tsv_path,files_dir,call_time,output_dir,reduce_noise):
 
     # prepare output directories
-    positive_dir = os.path.join(output_dir, r"positive_calls")
+    positive_dir = os.path.join(output_dir, "positive_calls")
     if not os.path.isdir(positive_dir):
         os.mkdir(positive_dir)
 
-    negative_dir = os.path.join(output_dir, r"negative_calls")
+    negative_dir = os.path.join(output_dir, "negative_calls")
     if not os.path.isdir(negative_dir):
         os.mkdir(negative_dir)
-
 
     # load tsv file
     call_annotations = pd.read_csv(tsv_path, sep="\t")
@@ -133,16 +146,15 @@ def main(tsv_path,files_dir,call_time,output_dir):
     except Exception:
         print("Please change the start time of the call label in your .tsv to start")
 
-    print(call_annotations.head())
-
     # extract the audio of the calls
-    extract_audio(positive_dir,files_dir,call_time,call_annotations)
+    extract_audio(positive_dir,files_dir,call_time,call_annotations,reduce_noise)
 
     # generate negative .tsv file
     negative_generated_tsv = generate_negative_tsv(call_annotations,call_time, files_dir)
 
     # extract the audio of the negative calls or background calls
-    extract_audio(negative_dir,files_dir,call_time,negative_generated_tsv)
+
+    extract_audio(negative_dir,files_dir,call_time,negative_generated_tsv,reduce_noise)
 
 
 # In[ ]:
@@ -155,13 +167,14 @@ if __name__ == "__main__":
     parser.add_argument("--files_dir",type=str,help="Path to directory with audio files")
     parser.add_argument("--call_time",type=int,help="Target length of processed audio file")
     parser.add_argument("--output_dir",type=str,help="Path to output directory")
+    parser.add_argument("--reduce_noise",action="store_true",help="Set true: Reduce noise in extracted calls")
 
     args = parser.parse_args()
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    main(args.tsv_path,args.files_dir,args.call_time,args.output_dir)
+    main(args.tsv_path,args.files_dir,args.call_time,args.output_dir,args.reduce_noise)
 
 
 # In[ ]:
