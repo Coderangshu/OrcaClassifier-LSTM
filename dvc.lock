@@ -56,14 +56,14 @@ get_test_data2:
     md5: 8b25ba0d142de850a0f890b523074962.dir
 extract_calls_rnd2:
   cmd: python preprocess.py --tsv_path Round2_OS_07_05/train.tsv  --files_dir Round2_OS_07_05/wav
-    --call_time 2 --output_dir extracted-calls
+    --call_time 2 --output_dir extracted-calls --reduce_noise
   deps:
   - path: Round2_OS_07_05
     md5: 2e4c38c2a3d9a0bb6c3b9b2e326741f6.dir
   - path: preprocess.py
-    md5: f38e6d244c189f9adf9f892439474e74
+    md5: 67cb47abbfe31c6fcc09911a051632fc
   outs:
   - path: extracted-calls/negative_calls
-    md5: 8b1db261bbc6a2c323c77e1ec6302036.dir
+    md5: 08f5df1262b19e8466b71edb3a79fbaa.dir
   - path: extracted-calls/positive_calls
-    md5: 12e4b40e55ca7fca42e59c065cbf551b.dir
+    md5: 688b491a57630662b76596f7ea7b5726.dir
