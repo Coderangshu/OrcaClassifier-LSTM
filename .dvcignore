@@ -1,6 +1,0 @@
-# Add patterns of files dvc should ignore, which could improve
-# the performance. Learn more at
-# https://dvc.org/doc/user-guide/dvcignore
-#/Round2_OS_07_05
-#/Round3_OS_09_27_2017
-#/OrcasoundLab09272017_Test

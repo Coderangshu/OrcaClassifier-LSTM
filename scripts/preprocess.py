@@ -90,7 +90,7 @@ def extract_audio(output_directory,file_location,call_time_in_seconds,call_annot
     call_duration = 0
     call_time_in_seconds = call_time_in_seconds*1000
 
-    for i in tqdm(range(0,len(file_name)),desc = "{} extraction".format(dir)):
+    for i in tqdm(range(len(file_name)),desc = "{} extraction".format(dir)):
         audio_file = file_name[i]
         audio_file = os.path.join(file_location, audio_file)
         sound = AudioSegment.from_file(audio_file)
