@@ -32,8 +32,3 @@ stages:
     deps:
     - scripts/preprocess.py
     - Round2_OS_07_05
-    outs:
-    - extracted-calls/1:
-        cache: false
-    - extracted-calls/0:
-        cache: false

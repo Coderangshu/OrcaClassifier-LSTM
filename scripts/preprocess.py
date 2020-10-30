@@ -7,6 +7,7 @@
 #!python
 import argparse
 import os
+import sys
 from pathlib import Path
 import selection_table as sl
 import soundfile as sf
@@ -91,6 +92,11 @@ def extract_audio(output_directory,file_location,call_time_in_seconds,call_annot
     call_time_in_seconds = call_time_in_seconds*1000
 
     for i in tqdm(range(len(file_name)),desc = "{} extraction".format(dir)):
+
+        output_file = os.path.join(output_directory,"extracted_calls{0}.wav".format(i))
+        if os.path.exists(output_file):
+            continue
+
         audio_file = file_name[i]
         audio_file = os.path.join(file_location, audio_file)
         sound = AudioSegment.from_file(audio_file)
@@ -111,15 +117,9 @@ def extract_audio(output_directory,file_location,call_time_in_seconds,call_annot
             noisy_part = array
             reduced_noise = nr.reduce_noise(audio_clip=array.astype('float64'), noise_clip=noisy_part.astype('float64'), use_tensorflow=True, verbose=False)
 
-            output_file = os.path.join(
-                            output_directory,
-                            "extracted_calls{0}.wav".format(i))
             wavio.write(output_file, reduced_noise, Frequency, sampwidth=2)
 
         else:
-            output_file = os.path.join(
-                            output_directory,
-                            "extracted_calls{0}.wav".format(i))
             call.export(output_file, format="wav")
 
 # In[ ]:
@@ -129,11 +129,11 @@ def main(tsv_path,files_dir,call_time,output_dir,reduce_noise):
 
     # prepare output directories
     positive_dir = os.path.join(output_dir, "1")
-    if not os.path.isdir(positive_dir):
+    if os.path.exists(positive_dir) is False:
         os.mkdir(positive_dir)
 
     negative_dir = os.path.join(output_dir, "0")
-    if not os.path.isdir(negative_dir):
+    if os.path.exists(negative_dir) is False:
         os.mkdir(negative_dir)
 
     # load tsv file
@@ -176,8 +176,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    if os.path.exists(args.output_dir) is True:
+        print("Dataset is up-to-date.....exiting")
+        sys.exit()
+
+    os.mkdir(args.output_dir)
 
     main(args.tsv_path,args.files_dir,args.call_time,args.output_dir,args.reduce_noise)
 

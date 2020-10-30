@@ -37,9 +37,4 @@ extract_calls_rnd2:
   - path: Round2_OS_07_05
     md5: 2e4c38c2a3d9a0bb6c3b9b2e326741f6.dir
   - path: scripts/preprocess.py
-    md5: da769c93ff65c8b1ab02dcfc2b8f73b9
-  outs:
-  - path: extracted-calls/0
-    md5: 56b9eaf2503b2bacc8b4be0fca1f4ef5.dir
-  - path: extracted-calls/1
-    md5: 688b491a57630662b76596f7ea7b5726.dir
+    md5: 98f62fb8e604be2bd887a469f0bea815
