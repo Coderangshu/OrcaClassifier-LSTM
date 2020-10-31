@@ -8,11 +8,11 @@ import tensorflow as tf
 import os
 
 class CustomModel:
-    global model
     def __init__(self, N_CLASSES=2, SR=20000, DT=2.0):
         self.N_CLASSES = N_CLASSES
         self.SR = SR
         self.DT = DT
+        self.model = None
 
     def Conv1D(self):
         input_shape = (int(self.SR*self.DT), 1)
