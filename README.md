@@ -5,5 +5,3 @@
 - Three models have been created for a better comparison of there respective metrics, the main objective here is to make the LSTM model perform the best, a 1-D Convolutional Network and a 2-D Convolutional Network have been created for the same.
 - The output metrics to instantiate the training procedure:<br>
 <img src="logs/metric.png">
-- To view the summary of the models run:<br> `python scripts/models.py` --summary or `python scripts/models.py -sum` (For Windows)<br>
-`python3 scripts/models.py --summary` or `python3 scripts/models.py -sum` (For Linux)
