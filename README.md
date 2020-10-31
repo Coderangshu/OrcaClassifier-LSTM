@@ -6,5 +6,5 @@
 - The output metrics to instantiate the training procedure:<br>
 <img src="logs/metric.png">
 - To view the summary of the models run:<br>
-`python scripts/models.py --summary` or `python scripts/models.py -sum` (For Windows)<br>
+`python scripts/models.py` --summary or `python scripts/models.py -sum` (For Windows)<br>
 `python3 scripts/models.py --summary` or `python3 scripts/models.py -sum` (For Linux)
