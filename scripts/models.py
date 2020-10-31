@@ -6,6 +6,7 @@ import kapre
 from kapre.composed import get_melspectrogram_layer
 import tensorflow as tf
 import os
+import argparse
 
 class CustomModel:
     def __init__(self, N_CLASSES=2, SR=20000, DT=2.0):
@@ -140,3 +141,19 @@ class CustomModel:
 
     def summary(self):
         print(self.model.summary())
+
+def Summary():
+    CustomModel().Conv1D().summary()
+    CustomModel().Conv2D().summary()
+    CustomModel().LSTM().summary()
+
+if __name__ == "__main__":
+    summary = False
+    parser = argparse.ArgumentParser(description="Print the summary of the models")
+    parser.add_argument("--summary", "-sum", action="store_true", help="Add argument to see summary of the models")
+
+    args = parser.parse_args()
+    summary = args.summary
+
+    if summary:
+        Summary()
