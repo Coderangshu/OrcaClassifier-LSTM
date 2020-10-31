@@ -6,6 +6,7 @@ from tensorflow.keras.callbacks import CSVLogger, ModelCheckpoint
 from tensorflow.keras.utils import to_categorical
 import os
 from scipy.io import wavfile
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from sklearn.utils.class_weight import compute_class_weight
@@ -72,9 +73,9 @@ def train(args):
               'lstm':  CM(**params).LSTM()}
     assert model_type in models.keys(), '{} is not an available model'.format(model_type)
     
-    if os.path.exists('../logs') is False:
-        os.mkdir('../logs')
-    csv_path = os.path.join('../logs', '{}_history.csv'.format(model_type))
+    if os.path.exists('logs') is False:
+        os.mkdir('logs')
+    csv_path = os.path.join('logs', '{}_history.csv'.format(model_type))
 
     wav_paths = glob('{}/**'.format(src_root), recursive=True)
     wav_paths = [x.replace(os.sep, '/') for x in wav_paths if '.wav' in x]
@@ -97,9 +98,9 @@ def train(args):
     vg = DataGenerator(wav_val, label_val, sr, dt,params['N_CLASSES'], batch_size=batch_size)
     
     model = models[model_type]
-    if os.path.exists('../models') is False:
-        os.mkdir('../models')
-    cp = ModelCheckpoint('../models/{}.h5'.format(model_type), monitor='val_loss',
+    if os.path.exists('models') is False:
+        os.mkdir('models')
+    cp = ModelCheckpoint('models/{}.h5'.format(model_type), monitor='val_loss',
                          save_best_only=True, save_weights_only=False,
                          mode='auto', save_freq='epoch', verbose=1)
     csv_logger = CSVLogger(csv_path, append=False)
@@ -107,12 +108,40 @@ def train(args):
               epochs=30, verbose=1,
               callbacks=[csv_logger, cp])
 
+def plot_history(plt_grph = False):
+    if plt_grph:
+        log_csvs = sorted(glob('logs/*.csv'))
+        print(log_csvs)
+
+        labels = ['Conv 1D', 'Conv 2D', 'LSTM']
+        colors = ['r', 'm', 'c']
+
+        fig, ax = plt.subplots(1, 3, sharey=True, figsize=(16,5))
+
+        for i, (fn, label, c) in enumerate(zip(log_csvs, labels, colors)):
+            # csv_path = os.path.join('..', 'logs', fn)
+            csv_path = fn
+            df = pd.read_csv(csv_path)
+            ax[i].set_title(label, size=16)
+            ax[i].plot(df.accuracy, color=c, label='train')
+            ax[i].plot(df.val_accuracy, ls='--', color=c, label='test')
+            ax[i].legend(loc='upper left')
+            ax[i].tick_params(axis='both', which='major', labelsize=12)
+            ax[i].set_ylim([0,1.0])
+
+        fig.text(0.5, 0.02, 'Epochs', ha='center', size=14)
+        fig.text(0.08, 0.5, 'Accuracy', va='center', rotation='vertical', size=14)
+
+        if os.path.exists('logs/metric.png') is True:
+            os.remove('logs/metric.png')
+        plt.savefig('logs/metric.png')
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Audio Classification Training')
     parser.add_argument('--model_type', type=str, default='lstm',
                         help='model to run. i.e. conv1d, conv2d, lstm')
-    parser.add_argument('--src_root', type=str, default='../clean',
+    parser.add_argument('--src_root', type=str, default='clean',
                         help='directory of audio files in total duration')
     parser.add_argument('--batch_size', type=int, default=16,
                         help='batch size')
@@ -120,6 +149,8 @@ if __name__ == '__main__':
                         help='time in seconds to sample audio')
     parser.add_argument('--sample_rate', '-sr', type=int, default=20000,
                         help='sample rate of clean audio')
+    parser.add_argument('--plt_grph', '-pg', action="store_true", help="Set to plot graph of metrics")
     args, _ = parser.parse_known_args()
 
     train(args)
+    plot_history(args.plt_grph)
