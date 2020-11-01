@@ -26,6 +26,26 @@ import wavio
 from tqdm import tqdm
 import shutil
 
+parser = argparse.ArgumentParser(description="Preprocess audio files for use with CNN models")
+parser.add_argument("--tsv_path",type=str,help="Path to tsv file")
+parser.add_argument("--files_dir",type=str,help="Path to directory with audio files")
+parser.add_argument("--call_time",type=int, default=2, help="Target length of processed audio file")
+parser.add_argument("--output_dir",type=str, default='extracted-calls', help="Path to output directory")
+parser.add_argument("--reduce_noise","-nr",action="store_true",help="Set true: Reduce noise in extracted calls")
+
+# parser.add_argument('--src_root', type=str, default='../extracted-calls',help='directory of audio files in total duration')
+parser.add_argument('--dst_root', type=str, default='clean',help='directory to put audio files split by delta_time')
+parser.add_argument('--delta_time', '-dt', type=float, default=2.0,help='time in seconds to sample audio')
+parser.add_argument('--sr', type=int, default=20000,help='rate to downsample audio')
+# parser.add_argument('--fn', type=str, default='../extract_calls/extracted_calls0.wav',help='file to plot over time to check magnitude')
+parser.add_argument('--threshold', type=str, default=20,help='threshold magnitude for np.int16 dtype')
+
+args = parser.parse_args()
+
+if os.path.exists(args.dst_root) is True:
+    print("Dataset is up-to-date.....exiting")
+    sys.exit()
+
 # In[ ]:
 def envelope(y, rate, threshold):
     mask = []
@@ -154,7 +174,18 @@ def generate_negative_tsv(call_annotations,call_time,files_dir):
 
 
 # In[ ]:
+def noise_reduction(output_file,call):
+    import tensorflow as tf
+    physical_devices = tf.config.experimental.list_physical_devices('GPU')
+    if len(physical_devices) > 0:
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+    wname = mktemp('.wav')
+    call.export(wname, format="wav")
+    (Frequency, array) = read(wname)
+    noisy_part = array
+    reduced_noise = nr.reduce_noise(audio_clip=array.astype('float64'), noise_clip=noisy_part.astype('float64'), use_tensorflow=True, verbose=False)
 
+    wavio.write(output_file, reduced_noise, Frequency, sampwidth=2)
 
 def extract_audio(output_directory,file_location,call_time_in_seconds,call_annotations,reduce_noise=False):
     """This function extracts the audio of a specified duration.
@@ -204,18 +235,7 @@ def extract_audio(output_directory,file_location,call_time_in_seconds,call_annot
         call = sound[start_time_duration:call_duration]
 
         if reduce_noise:
-            import tensorflow as tf
-            physical_devices = tf.config.experimental.list_physical_devices('GPU')
-            if len(physical_devices) > 0:
-                tf.config.experimental.set_memory_growth(physical_devices[0], True)
-            wname = mktemp('.wav')
-            call.export(wname, format="wav")
-            (Frequency, array) = read(wname)
-            noisy_part = array
-            reduced_noise = nr.reduce_noise(audio_clip=array.astype('float64'), noise_clip=noisy_part.astype('float64'), use_tensorflow=True, verbose=False)
-
-            wavio.write(output_file, reduced_noise, Frequency, sampwidth=2)
-
+            noise_reduction(output_file,call)
         else:
             call.export(output_file, format="wav")
 
@@ -266,27 +286,10 @@ def main(tsv_path,files_dir,call_time,output_dir,reduce_noise):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Preprocess audio files for use with CNN models")
-    parser.add_argument("--tsv_path",type=str,help="Path to tsv file")
-    parser.add_argument("--files_dir",type=str,help="Path to directory with audio files")
-    parser.add_argument("--call_time",type=int, default=2, help="Target length of processed audio file")
-    parser.add_argument("--output_dir",type=str, default='extracted-calls', help="Path to output directory")
-    parser.add_argument("--reduce_noise",action="store_true",help="Set true: Reduce noise in extracted calls")
-
-    # parser.add_argument('--src_root', type=str, default='../extracted-calls',help='directory of audio files in total duration')
-    parser.add_argument('--dst_root', type=str, default='clean',help='directory to put audio files split by delta_time')
-    parser.add_argument('--delta_time', '-dt', type=float, default=2.0,help='time in seconds to sample audio')
-    parser.add_argument('--sr', type=int, default=20000,help='rate to downsample audio')
-    # parser.add_argument('--fn', type=str, default='../extract_calls/extracted_calls0.wav',help='file to plot over time to check magnitude')
-    parser.add_argument('--threshold', type=str, default=20,help='threshold magnitude for np.int16 dtype')
-
-    args = parser.parse_args()
-
-    if os.path.exists(args.dst_root) is True:
-        print("Dataset is up-to-date.....exiting")
-        sys.exit()
-
+    if os.path.exists(args.output_dir):
+        shutil.rmtree(args.output_dir)
     os.mkdir(args.output_dir)
+    
     main(args.tsv_path,args.files_dir,args.call_time,args.output_dir,args.reduce_noise)
     
     shutil.rmtree(args.output_dir)
