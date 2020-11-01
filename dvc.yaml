@@ -28,9 +28,9 @@ stages:
     - test_data:
         cache: false
   extract_clean_calls_rnd2:
-    cmd: python scripts/preprocess.py --tsv_path Round2_OS_07_05/train.tsv  --files_dir Round2_OS_07_05/wav --reduce_noise
+    cmd: python scripts/preprocessing/preprocess.py --tsv_path Round2_OS_07_05/train.tsv  --files_dir Round2_OS_07_05/wav --reduce_noise
     deps:
-    - scripts/preprocess.py
+    - scripts/preprocessing/preprocess.py
     - Round2_OS_07_05
     # Here outs: is not given as the pipeline deletes the previous out(if present) whenever it is executed thus creating the outs directory again making it computationally heavy.
   train_model_conv1d:
