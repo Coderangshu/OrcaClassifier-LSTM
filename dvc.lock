@@ -30,11 +30,39 @@ get_test_data2:
   outs:
   - path: test_data
     md5: 8b25ba0d142de850a0f890b523074962.dir
-extract_calls_rnd2:
+extract_clean_calls_rnd2:
   cmd: python scripts/preprocess.py --tsv_path Round2_OS_07_05/train.tsv  --files_dir
-    Round2_OS_07_05/wav --call_time 2 --output_dir extracted-calls --reduce_noise
+    Round2_OS_07_05/wav --reduce_noise
   deps:
   - path: Round2_OS_07_05
     md5: 2e4c38c2a3d9a0bb6c3b9b2e326741f6.dir
   - path: scripts/preprocess.py
-    md5: 98f62fb8e604be2bd887a469f0bea815
+    md5: b1315359116d1723fc9323214b29dca0
+train_model:
+  cmd: python scripts/train.py --model_type lstm --plt_grph
+  deps:
+  - path: clean
+    md5: 7b5d39d4b466252b7a0bf0dedb918a34.dir
+  - path: scripts/train.py
+    md5: b62a6e9fb1f98ca40ec4227c2396a9ee
+train_model_conv1d:
+  cmd: python scripts/train.py --model_type conv1d
+  deps:
+  - path: clean
+    md5: 7b5d39d4b466252b7a0bf0dedb918a34.dir
+  - path: scripts/train.py
+    md5: b62a6e9fb1f98ca40ec4227c2396a9ee
+train_model_conv2d:
+  cmd: python scripts/train.py --model_type conv2d
+  deps:
+  - path: clean
+    md5: 7b5d39d4b466252b7a0bf0dedb918a34.dir
+  - path: scripts/train.py
+    md5: b62a6e9fb1f98ca40ec4227c2396a9ee
+train_model_lstm:
+  cmd: python scripts/train.py --model_type lstm --plt_grph
+  deps:
+  - path: clean
+    md5: 7b5d39d4b466252b7a0bf0dedb918a34.dir
+  - path: scripts/train.py
+    md5: b62a6e9fb1f98ca40ec4227c2396a9ee

@@ -1,9 +1,3 @@
-import tensorflow as tf
-physical_devices = tf.config.experimental.list_physical_devices('GPU')
-if len(physical_devices) > 0:
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-from tensorflow.keras.callbacks import CSVLogger, ModelCheckpoint
-from tensorflow.keras.utils import to_categorical
 import os
 from scipy.io import wavfile
 import matplotlib.pyplot as plt
@@ -17,9 +11,33 @@ from tqdm import tqdm
 from glob import glob
 import argparse
 import warnings
+import sys
 
+parser = argparse.ArgumentParser(description='Audio Classification Training')
+parser.add_argument('--model_type', type=str, default='lstm',help='model to run. i.e. conv1d, conv2d, lstm')
+parser.add_argument('--src_root', type=str, default='clean',help='directory of audio files in total duration')
+parser.add_argument('--batch_size', type=int, default=16,help='batch size')
+parser.add_argument('--delta_time', '-dt', type=float, default=2.0,help='time in seconds to sample audio')
+parser.add_argument('--sample_rate', '-sr', type=int, default=20000,help='sample rate of clean audio')
+parser.add_argument('--plt_grph', '-pg', action="store_true", help="Set to plot graph of metrics")
+parser.add_argument('--force', '-f', action="store_true",help="Set to train model even if present")
 
-class DataGenerator(tf.keras.utils.Sequence):
+args, _ = parser.parse_known_args()
+
+force = False
+force = args.force
+if os.path.exists("models/{}.h5".format(args.model_type)) and not force is True:
+    print("Model is trained......exiting")
+    sys.exit()
+
+import tensorflow as tf
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+if len(physical_devices) > 0:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+from tensorflow.keras.callbacks import CSVLogger, ModelCheckpoint
+from tensorflow.keras.utils import to_categorical, Sequence
+
+class DataGenerator(Sequence):
     def __init__(self, wav_paths, labels, sr, dt, n_classes,batch_size=32, shuffle=True):
         self.wav_paths = wav_paths
         self.labels = labels
@@ -57,7 +75,6 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.indexes = np.arange(len(self.wav_paths))
         if self.shuffle:
             np.random.shuffle(self.indexes)
-
 
 def train(args):
     src_root = args.src_root
@@ -100,13 +117,9 @@ def train(args):
     model = models[model_type]
     if os.path.exists('models') is False:
         os.mkdir('models')
-    cp = ModelCheckpoint('models/{}.h5'.format(model_type), monitor='val_loss',
-                         save_best_only=True, save_weights_only=False,
-                         mode='auto', save_freq='epoch', verbose=1)
+    cp = ModelCheckpoint('models/{}.h5'.format(model_type), monitor='val_loss',save_best_only=True, save_weights_only=False,mode='auto', save_freq='epoch', verbose=1)
     csv_logger = CSVLogger(csv_path, append=False)
-    model.fit(tg, validation_data=vg,
-              epochs=30, verbose=1,
-              callbacks=[csv_logger, cp])
+    model.fit(tg, validation_data=vg,epochs=30, verbose=1,callbacks=[csv_logger, cp])
 
 def plot_history(plt_grph = False):
     if plt_grph:
@@ -137,20 +150,6 @@ def plot_history(plt_grph = False):
         plt.savefig('logs/metric.png')
 
 if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description='Audio Classification Training')
-    parser.add_argument('--model_type', type=str, default='lstm',
-                        help='model to run. i.e. conv1d, conv2d, lstm')
-    parser.add_argument('--src_root', type=str, default='clean',
-                        help='directory of audio files in total duration')
-    parser.add_argument('--batch_size', type=int, default=16,
-                        help='batch size')
-    parser.add_argument('--delta_time', '-dt', type=float, default=2.0,
-                        help='time in seconds to sample audio')
-    parser.add_argument('--sample_rate', '-sr', type=int, default=20000,
-                        help='sample rate of clean audio')
-    parser.add_argument('--plt_grph', '-pg', action="store_true", help="Set to plot graph of metrics")
-    args, _ = parser.parse_known_args()
 
     train(args)
     plot_history(args.plt_grph)
