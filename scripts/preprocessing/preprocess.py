@@ -5,6 +5,8 @@
 
 
 #!python
+import matplotlib.pyplot as plt
+from glob import glob
 import argparse
 import os
 import sys
@@ -12,17 +14,132 @@ from pathlib import Path
 import selection_table as sl
 import soundfile as sf
 import librosa
+from librosa.core import resample, to_mono
 import pandas as pd
+import numpy as np
 from pydub import AudioSegment
 import noisereduce as nr
 from tempfile import mktemp
+from scipy.io import wavfile
 from scipy.io.wavfile import read
 import wavio
 from tqdm import tqdm
+import shutil
 
+parser = argparse.ArgumentParser(description="Preprocess audio files for use with CNN models")
+parser.add_argument("--tsv_path",type=str,help="Path to tsv file")
+parser.add_argument("--files_dir",type=str,help="Path to directory with audio files")
+parser.add_argument("--call_time",type=int, default=2, help="Target length of processed audio file")
+parser.add_argument("--output_dir",type=str, default='extracted-calls', help="Path to output directory")
+parser.add_argument("--reduce_noise","-nr",action="store_true",help="Set true: Reduce noise in extracted calls")
+
+# parser.add_argument('--src_root', type=str, default='../extracted-calls',help='directory of audio files in total duration')
+parser.add_argument('--dst_root', type=str, default='clean',help='directory to put audio files split by delta_time')
+parser.add_argument('--delta_time', '-dt', type=float, default=2.0,help='time in seconds to sample audio')
+parser.add_argument('--sr', type=int, default=20000,help='rate to downsample audio')
+# parser.add_argument('--fn', type=str, default='../extract_calls/extracted_calls0.wav',help='file to plot over time to check magnitude')
+parser.add_argument('--threshold', type=str, default=20,help='threshold magnitude for np.int16 dtype')
+
+args = parser.parse_args()
+
+if os.path.exists(args.dst_root) is True:
+    print("Dataset is up-to-date.....exiting")
+    sys.exit()
 
 # In[ ]:
+def envelope(y, rate, threshold):
+    mask = []
+    y = pd.Series(y[0]).apply(np.abs)
+    y_mean = y.rolling(window=int(rate/20),
+                       min_periods=1,
+                       center=True).max()
+    for mean in y_mean:
+        if mean > threshold:
+            mask.append(True)
+        else:
+            mask.append(False)
+    return mask
 
+def downsample_mono(path, sr):
+    obj = wavio.read(path)
+    wav = obj.data.astype(np.float32, order='F')
+    rate = obj.rate
+    try:
+        # tmp = wav.shape[1]
+        wav = to_mono(wav.T)
+    except:
+        pass
+    wav = resample(wav, rate, sr)
+    wav = wav.astype(np.int16)
+    return sr, wav
+
+def save_sample(sample, rate, target_dir, fn, ix):
+    fn = fn.split('.wav')[0]
+    # dst_path = os.path.join(target_dir.split('.')[0], fn+'_{}.wav'.format(str(ix)))
+    dst_path = os.path.join(target_dir, fn+'_{}.wav'.format(str(ix)))
+    if os.path.exists(dst_path):
+        return
+    wavfile.write(dst_path, rate, sample)
+
+def check_dir(path):
+    if os.path.exists(path) is False:
+        os.mkdir(path)
+
+def split_wavs(args):
+    src_root = args.output_dir
+    dst_root = args.dst_root
+    dt = args.delta_time
+
+    wav_paths = glob('{}/**'.format(src_root), recursive=True)
+    wav_paths = [x for x in wav_paths if '.wav' in x]
+    # dirs = os.listdir(src_root)
+    check_dir(dst_root)
+    classes = os.listdir(src_root)
+    for _cls in classes:
+        target_dir = os.path.join(dst_root, _cls)
+        check_dir(target_dir)
+        src_dir = os.path.join(src_root, _cls)
+        for fn in tqdm(os.listdir(src_dir),desc="Further cleaning the extracts: "):
+            src_fn = os.path.join(src_dir, fn)
+            rate, wav = downsample_mono(src_fn, args.sr)
+            mask = envelope(wav, rate, threshold=args.threshold)
+            wav = wav * mask
+            delta_sample = int(dt*rate)
+
+            # cleaned audio is less than a single sample
+            # pad with zeros to delta_sample size
+            if wav.shape[0] < delta_sample:
+                sample = np.zeros(shape=(delta_sample,1), dtype=np.int16)
+                # print(sample.shape)
+                sample[:wav.shape[0]] = wav[0]
+                save_sample(sample, rate, target_dir, fn, 0)
+            # step through audio and save every delta_sample
+            # discard the ending audio if it is too short
+            else:
+                trunc = wav.shape[0] % delta_sample
+                for cnt, i in enumerate(np.arange(0, wav.shape[0]-trunc, delta_sample)):
+                    start = int(i)
+                    stop = int(i + delta_sample)
+                    sample = wav[start:stop]
+                    save_sample(sample, rate, target_dir, fn, cnt)
+
+# def test_threshold(args):
+#     src_root = args.src_root
+#     wav_paths = glob('{}/**'.format(src_root), recursive=True)
+#     wav_path = [x for x in wav_paths if args.fn in x]
+#     if len(wav_path) != 1:
+#         print('audio file not found for sub-string: {}'.format(args.fn))
+#         return
+#     rate, wav = downsample_mono(wav_path[0], args.sr)
+#     mask = envelope(wav, rate, threshold=args.threshold)
+#     plt.style.use('ggplot')
+#     plt.title('Signal Envelope, Threshold = {}'.format(str(args.threshold)))
+#     plt.plot(wav[np.logical_not(mask)], color='r', label='remove')
+#     plt.plot(wav[mask], color='c', label='keep')
+#     plt.plot(env, color='m', label='envelope')
+#     plt.grid(False)
+#     plt.legend(loc='best')
+#     plt.show()
 
 def generate_negative_tsv(call_annotations,call_time,files_dir):
 
@@ -57,8 +174,17 @@ def generate_negative_tsv(call_annotations,call_time,files_dir):
 
 
 # In[ ]:
-
-
+def noise_reduction(array):
+    import tensorflow as tf
+    physical_devices = tf.config.experimental.list_physical_devices('GPU')
+    if len(physical_devices) > 0:
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+    # wname = mktemp('.wav')
+    # call.export(wname, format="wav")
+    noisy_part = array
+    reduced_noise = nr.reduce_noise(audio_clip=array.astype('float64'), noise_clip=noisy_part.astype('float64'), use_tensorflow=True, verbose=False)
+    return reduced_noise
+    
 def extract_audio(output_directory,file_location,call_time_in_seconds,call_annotations,reduce_noise=False):
     """This function extracts the audio of a specified duration.
     Since a single audio clip might consist of a mixture of both calls
@@ -107,18 +233,11 @@ def extract_audio(output_directory,file_location,call_time_in_seconds,call_annot
         call = sound[start_time_duration:call_duration]
 
         if reduce_noise:
-            import tensorflow as tf
-            physical_devices = tf.config.experimental.list_physical_devices('GPU')
-            if len(physical_devices) > 0:
-                tf.config.experimental.set_memory_growth(physical_devices[0], True)
             wname = mktemp('.wav')
             call.export(wname, format="wav")
-            (Frequency, array) = read(wname)
-            noisy_part = array
-            reduced_noise = nr.reduce_noise(audio_clip=array.astype('float64'), noise_clip=noisy_part.astype('float64'), use_tensorflow=True, verbose=False)
-
+            Frequency,array = read(wname)
+            reduced_noise = noise_reduction(array)
             wavio.write(output_file, reduced_noise, Frequency, sampwidth=2)
-
         else:
             call.export(output_file, format="wav")
 
@@ -161,28 +280,20 @@ def main(tsv_path,files_dir,call_time,output_dir,reduce_noise):
 
     extract_audio(negative_dir,files_dir,call_time,negative_generated_tsv,reduce_noise)
 
+    # test_threshold(args)
+    split_wavs(args)
 
 # In[ ]:
 
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Preprocess audio files for use with CNN models")
-    parser.add_argument("--tsv_path",type=str,help="Path to tsv file")
-    parser.add_argument("--files_dir",type=str,help="Path to directory with audio files")
-    parser.add_argument("--call_time",type=int,help="Target length of processed audio file")
-    parser.add_argument("--output_dir",type=str,help="Path to output directory")
-    parser.add_argument("--reduce_noise",action="store_true",help="Set true: Reduce noise in extracted calls")
-
-    args = parser.parse_args()
-
-    if os.path.exists(args.output_dir) is True:
-        print("Dataset is up-to-date.....exiting")
-        sys.exit()
-
+    if os.path.exists(args.output_dir):
+        shutil.rmtree(args.output_dir)
     os.mkdir(args.output_dir)
-
+    
     main(args.tsv_path,args.files_dir,args.call_time,args.output_dir,args.reduce_noise)
-
+    
+    shutil.rmtree(args.output_dir)
 
 # In[ ]:
