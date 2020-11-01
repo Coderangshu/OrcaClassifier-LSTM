@@ -41,7 +41,7 @@ class CustomModel:
         x = layers.Dropout(rate=0.1, name='dropout')(x)
         x = layers.Dense(64, activation='relu', activity_regularizer=l2(0.001), name='dense')(x)
         if self.N_CLASSES==2:
-            o = layers.Dense(self.N_CLASSES, activation='sigmoid', name='sigmoid')(x)
+            o = layers.Dense(1, activation='sigmoid', name='sigmoid')(x)
             self.model = Model(inputs=i.input, outputs=o, name='1d_convolution')
             self.model.compile(optimizer='adam',
                     loss='binary_crossentropy',
@@ -82,7 +82,7 @@ class CustomModel:
         x = layers.Dropout(rate=0.2, name='dropout')(x)
         x = layers.Dense(64, activation='relu', activity_regularizer=l2(0.001), name='dense')(x)
         if self.N_CLASSES==2:
-            o = layers.Dense(self.N_CLASSES, activation='sigmoid', name='sigmoid')(x)
+            o = layers.Dense(1, activation='sigmoid', name='sigmoid')(x)
             self.model = Model(inputs=i.input, outputs=o, name='2d_convolution')
             self.model.compile(optimizer='adam',
                         loss='binary_crossentropy',
@@ -125,7 +125,7 @@ class CustomModel:
                             activity_regularizer=l2(0.001),
                             name='dense_3_relu')(x)
         if self.N_CLASSES==2:
-            o = layers.Dense(self.N_CLASSES, activation='sigmoid', name='sigmoid')(x)
+            o = layers.Dense(1, activation='sigmoid', name='sigmoid')(x)
             self.model = Model(inputs=i.input, outputs=o, name='long_short_term_memory')
             self.model.compile(optimizer='adam',
                         loss='binary_crossentropy',

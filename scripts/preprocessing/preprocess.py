@@ -174,19 +174,17 @@ def generate_negative_tsv(call_annotations,call_time,files_dir):
 
 
 # In[ ]:
-def noise_reduction(output_file,call):
+def noise_reduction(array):
     import tensorflow as tf
     physical_devices = tf.config.experimental.list_physical_devices('GPU')
     if len(physical_devices) > 0:
         tf.config.experimental.set_memory_growth(physical_devices[0], True)
-    wname = mktemp('.wav')
-    call.export(wname, format="wav")
-    (Frequency, array) = read(wname)
+    # wname = mktemp('.wav')
+    # call.export(wname, format="wav")
     noisy_part = array
     reduced_noise = nr.reduce_noise(audio_clip=array.astype('float64'), noise_clip=noisy_part.astype('float64'), use_tensorflow=True, verbose=False)
-
-    wavio.write(output_file, reduced_noise, Frequency, sampwidth=2)
-
+    return reduced_noise
+    
 def extract_audio(output_directory,file_location,call_time_in_seconds,call_annotations,reduce_noise=False):
     """This function extracts the audio of a specified duration.
     Since a single audio clip might consist of a mixture of both calls
@@ -235,7 +233,11 @@ def extract_audio(output_directory,file_location,call_time_in_seconds,call_annot
         call = sound[start_time_duration:call_duration]
 
         if reduce_noise:
-            noise_reduction(output_file,call)
+            wname = mktemp('.wav')
+            call.export(wname, format="wav")
+            Frequency,array = read(wname)
+            reduced_noise = noise_reduction(array)
+            wavio.write(output_file, reduced_noise, Frequency, sampwidth=2)
         else:
             call.export(output_file, format="wav")
 

@@ -37,32 +37,25 @@ extract_clean_calls_rnd2:
   - path: Round2_OS_07_05
     md5: 2e4c38c2a3d9a0bb6c3b9b2e326741f6.dir
   - path: scripts/preprocessing/preprocess.py
-    md5: b1315359116d1723fc9323214b29dca0
-train_model:
-  cmd: python scripts/train.py --model_type lstm --plt_grph
-  deps:
-  - path: clean
-    md5: 7b5d39d4b466252b7a0bf0dedb918a34.dir
-  - path: scripts/train.py
-    md5: b62a6e9fb1f98ca40ec4227c2396a9ee
+    md5: d59669d1b8efe0333ba36e4280ea0495
 train_model_conv1d:
   cmd: python scripts/train.py --model_type conv1d
   deps:
   - path: clean
-    md5: 7b5d39d4b466252b7a0bf0dedb918a34.dir
+    md5: ce8e8c2e32c0efecdb6cc316db203e96.dir
   - path: scripts/train.py
-    md5: b62a6e9fb1f98ca40ec4227c2396a9ee
+    md5: b0b40de25008450701d4f2d2e66b358c
 train_model_conv2d:
   cmd: python scripts/train.py --model_type conv2d
   deps:
   - path: clean
-    md5: 7b5d39d4b466252b7a0bf0dedb918a34.dir
+    md5: ce8e8c2e32c0efecdb6cc316db203e96.dir
   - path: scripts/train.py
-    md5: b62a6e9fb1f98ca40ec4227c2396a9ee
+    md5: b0b40de25008450701d4f2d2e66b358c
 train_model_lstm:
   cmd: python scripts/train.py --model_type lstm --plt_grph
   deps:
   - path: clean
-    md5: 7b5d39d4b466252b7a0bf0dedb918a34.dir
+    md5: ce8e8c2e32c0efecdb6cc316db203e96.dir
   - path: scripts/train.py
-    md5: b62a6e9fb1f98ca40ec4227c2396a9ee
+    md5: b0b40de25008450701d4f2d2e66b358c

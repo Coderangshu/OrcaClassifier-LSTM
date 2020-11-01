@@ -66,7 +66,9 @@ class DataGenerator(Sequence):
         for i, (path, label) in enumerate(zip(wav_paths, labels)):
             _, wav = wavfile.read(path)
             X[i,] = wav.reshape(-1, 1)
-            Y[i,] = to_categorical(label, num_classes=self.n_classes)
+            Y[i,] = label
+            if self.n_classes>2:
+                Y[i,] = to_categorical(label, num_classes=self.n_classes)
 
         return X, Y
 
