@@ -7,5 +7,5 @@
 - To view the summary of the models run:<br> `python scripts/models.py --summary(-sum)` (For Windows)<br> `python3 scripts/models.py --summary(-sum)` (For Linux)
 - To train the model alone from the available options [conv1,conv2,lstm] run:<br> `python scripts/train.py --model_type <model_name_from_list>`(For Windows)<br>`python scripts/train.py --model_type <model_name_from_list>`(For linux)<br> Add --plt_grph(-pg), --force(-f) for plotting the graphs for all the models and for forcefully training even when previously trained respectively.<br>**Note**:<br>1. For the plotting the metrics for all the models must be present in logs directory else the result would be faulty.<br>2. Without `--force` by the default command, the models will train only if not trained previously.
 - Three models have been created for a better comparison of there respective metrics, the main objective here is to make the LSTM model perform the best, a 1-D Convolutional Network and a 2-D Convolutional Network have been created for the same.
-- The output metrics to instantiate the training procedure:<br>
+- The output metrics instantiating the training procedure:<br>
 <img src="logs/metric.png">
