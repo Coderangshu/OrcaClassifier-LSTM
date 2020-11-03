@@ -1,4 +1,12 @@
+librosa
+numpy
 pandas
 pysoundfile
-ketos
 scipy
+matplotlib
+soundfile
+pydub
+noisereduce
+wavio
+tensorflow
+kapre

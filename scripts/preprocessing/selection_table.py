@@ -4,8 +4,6 @@ import numpy as np
 import pandas as pd
 
 
-import os
-
 def find_files(path, substr, return_path=True, search_subdirs=False, search_path=False):
     """ Find all files in the specified directory containing the specified substring in their file name
         Args:
