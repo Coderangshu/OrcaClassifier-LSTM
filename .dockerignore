@@ -1,0 +1,17 @@
+/.dvc
+/.git
+/clean
+/logs
+/models
+/Round2_OS_07_05
+/Round3_OS_09_27_2017
+/OrcasoundLab09272017_Test
+/test_data
+/.ipynb_checkpoints
+/.ipynb
+__pycache__
+/.gitignore
+/dvc.lock
+/models.dvc
+/README.md
+/Dockerfile
