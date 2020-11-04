@@ -184,7 +184,7 @@ def noise_reduction(array):
     noisy_part = array
     reduced_noise = nr.reduce_noise(audio_clip=array.astype('float64'), noise_clip=noisy_part.astype('float64'), use_tensorflow=True, verbose=False)
     return reduced_noise
-    
+
 def extract_audio(output_directory,file_location,call_time_in_seconds,call_annotations,reduce_noise=False):
     """This function extracts the audio of a specified duration.
     Since a single audio clip might consist of a mixture of both calls
@@ -291,9 +291,9 @@ if __name__ == "__main__":
     if os.path.exists(args.output_dir):
         shutil.rmtree(args.output_dir)
     os.mkdir(args.output_dir)
-    
+
     main(args.tsv_path,args.files_dir,args.call_time,args.output_dir,args.reduce_noise)
-    
+
     shutil.rmtree(args.output_dir)
 
 # In[ ]:

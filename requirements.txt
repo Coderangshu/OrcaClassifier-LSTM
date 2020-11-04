@@ -9,5 +9,5 @@ soundfile
 pydub
 noisereduce
 wavio
-tensorflow
+
 kapre

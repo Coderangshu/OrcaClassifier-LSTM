@@ -6,27 +6,27 @@ stages:
     outs:
     - Round2_OS_07_05:
         cache: false
-  get_rnd3_data:
-    cmd: tar -xzvf dvc/OrcasoundLab09272017_PodCastRound3.tar.gz
-    deps:
-    - dvc/OrcasoundLab09272017_PodCastRound3.tar.gz
-    outs:
-    - Round3_OS_09_27_2017:
-        cache: false
-  get_test_data:
-    cmd: tar -xzvf dvc/OrcasoundLab09272017_Test.tar.gz
-    deps:
-    - dvc/OrcasoundLab09272017_Test.tar.gz
-    outs:
-    - OrcasoundLab09272017_Test:
-        cache: false
-  get_test_data2:
-    cmd: tar -xzvf dvc/OS_SVeirs_07_05_2019_08_24_00.tar.gz
-    deps:
-    - dvc/OS_SVeirs_07_05_2019_08_24_00.tar.gz
-    outs:
-    - test_data:
-        cache: false
+  # get_rnd3_data:
+  #   cmd: tar -xzvf dvc/OrcasoundLab09272017_PodCastRound3.tar.gz
+  #   deps:
+  #   - dvc/OrcasoundLab09272017_PodCastRound3.tar.gz
+  #   outs:
+  #   - Round3_OS_09_27_2017:
+  #       cache: false
+  # get_test_data:
+  #   cmd: tar -xzvf dvc/OrcasoundLab09272017_Test.tar.gz
+  #   deps:
+  #   - dvc/OrcasoundLab09272017_Test.tar.gz
+  #   outs:
+  #   - OrcasoundLab09272017_Test:
+  #       cache: false
+  # get_test_data2:
+  #   cmd: tar -xzvf dvc/OS_SVeirs_07_05_2019_08_24_00.tar.gz
+  #   deps:
+  #   - dvc/OS_SVeirs_07_05_2019_08_24_00.tar.gz
+  #   outs:
+  #   - test_data:
+  #       cache: false
   extract_clean_calls_rnd2:
     cmd: python scripts/preprocessing/preprocess.py --tsv_path Round2_OS_07_05/train.tsv  --files_dir Round2_OS_07_05/wav --reduce_noise
     deps:

@@ -6,30 +6,6 @@ get_rnd2_data:
   outs:
   - path: Round2_OS_07_05
     md5: 2e4c38c2a3d9a0bb6c3b9b2e326741f6.dir
-get_rnd3_data:
-  cmd: tar -xzvf dvc/OrcasoundLab09272017_PodCastRound3.tar.gz
-  deps:
-  - path: dvc/OrcasoundLab09272017_PodCastRound3.tar.gz
-    md5: f139f4259bb2366eb2accf499f4723eb
-  outs:
-  - path: Round3_OS_09_27_2017
-    md5: ab24f18a5884b50454430710bd701ba3.dir
-get_test_data:
-  cmd: tar -xzvf dvc/OrcasoundLab09272017_Test.tar.gz
-  deps:
-  - path: dvc/OrcasoundLab09272017_Test.tar.gz
-    md5: 61f91fb7ed7f976c99381b4082d43536
-  outs:
-  - path: OrcasoundLab09272017_Test
-    md5: 026d5172bf52541eacfbc04ed9aee98f.dir
-get_test_data2:
-  cmd: tar -xzvf dvc/OS_SVeirs_07_05_2019_08_24_00.tar.gz
-  deps:
-  - path: dvc/OS_SVeirs_07_05_2019_08_24_00.tar.gz
-    md5: 4a65c4fea2ef82662c68f3ed978524ff
-  outs:
-  - path: test_data
-    md5: 8b25ba0d142de850a0f890b523074962.dir
 extract_clean_calls_rnd2:
   cmd: python scripts/preprocessing/preprocess.py --tsv_path Round2_OS_07_05/train.tsv  --files_dir
     Round2_OS_07_05/wav --reduce_noise
@@ -37,25 +13,25 @@ extract_clean_calls_rnd2:
   - path: Round2_OS_07_05
     md5: 2e4c38c2a3d9a0bb6c3b9b2e326741f6.dir
   - path: scripts/preprocessing/preprocess.py
-    md5: d59669d1b8efe0333ba36e4280ea0495
+    md5: 20507da6290c824c2060176c93594b5f
 train_model_conv1d:
   cmd: python scripts/train.py --model_type conv1d
   deps:
   - path: clean
-    md5: ce8e8c2e32c0efecdb6cc316db203e96.dir
+    md5: 9a87b08718c2c6f578dab4b6a46b08bb.dir
   - path: scripts/train.py
     md5: b0b40de25008450701d4f2d2e66b358c
 train_model_conv2d:
   cmd: python scripts/train.py --model_type conv2d
   deps:
   - path: clean
-    md5: ce8e8c2e32c0efecdb6cc316db203e96.dir
+    md5: 9a87b08718c2c6f578dab4b6a46b08bb.dir
   - path: scripts/train.py
     md5: b0b40de25008450701d4f2d2e66b358c
 train_model_lstm:
   cmd: python scripts/train.py --model_type lstm --plt_grph
   deps:
   - path: clean
-    md5: ce8e8c2e32c0efecdb6cc316db203e96.dir
+    md5: 9a87b08718c2c6f578dab4b6a46b08bb.dir
   - path: scripts/train.py
     md5: b0b40de25008450701d4f2d2e66b358c
