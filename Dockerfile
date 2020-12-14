@@ -18,12 +18,13 @@ WORKDIR  /OrcaClassifier
 COPY  requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy all the files from the project’s root to the working directory
-COPY dvc OrcaClassifier/dvc
-
 #initiate git & dvc
 RUN git init
 RUN dvc init
 
+# Copy all the files from the project’s root to the working directory
+COPY dvc .
+
 #run dvc pipeline
+COPY dvc.yaml .
 RUN dvc repro
